@@ -32,7 +32,7 @@
 #else
 #include <libavformat/avformat.h>
 #ifdef HAVE_AVI_H
-#include <ffmpeg/avi.h>
+#include <libavformat/avi.h>
 #endif
 #endif
 #include <gst/gst.h>

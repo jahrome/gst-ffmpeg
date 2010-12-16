@@ -2864,7 +2864,6 @@ gst_ffmpegdec_register (GstPlugin * plugin)
     if (in_plugin->id == CODEC_ID_RAWVIDEO ||
         in_plugin->id == CODEC_ID_V210 ||
         in_plugin->id == CODEC_ID_V210X ||
-        in_plugin->id == CODEC_ID_R210 ||
         (in_plugin->id >= CODEC_ID_PCM_S16LE &&
             in_plugin->id <= CODEC_ID_PCM_BLURAY)) {
       goto next;
@@ -2956,6 +2955,19 @@ gst_ffmpegdec_register (GstPlugin * plugin)
       case CODEC_ID_DVVIDEO:
       case CODEC_ID_SIPR:
         rank = GST_RANK_SECONDARY;
+        break;
+      case CODEC_ID_AAC:
+#ifdef BUILD_WITH_ANDROID
+        /* In android, we need AAC decoder, when gst-openmax is not avialable.
+         * Change rank to GST_RANK_MARGINAL to make decodebin2 find it.
+         */ 
+        rank = GST_RANK_MARGINAL;
+#else      
+        /* The ffmpeg AAC decoder isn't complete, and there's no way to figure out
+         * before decoding whether it will support the given stream or not.
+         * We therefore set it to NONE until it can handle the full specs. */
+        rank = GST_RANK_NONE;
+#endif        
         break;
       default:
         rank = GST_RANK_MARGINAL;
