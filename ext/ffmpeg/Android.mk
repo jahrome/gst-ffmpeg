@@ -49,7 +49,8 @@ LOCAL_C_INCLUDES := 			\
 	external/glib/gmodule   	\
 	external/glib/gobject  		\
 	external/glib/gthread		\
-	ffmpeg-android/ffmpeg
+	ffmpeg-android/ffmpeg		\
+	ffmpeg-android/build/ffmpeg/include/
 
 LOCAL_CFLAGS := \
 	-DHAVE_CONFIG_H -DHAVE_AVI_H -lavcodec -lavutil -lavformat
