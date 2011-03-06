@@ -49,7 +49,7 @@ LOCAL_C_INCLUDES := 			\
 	external/glib/gmodule   	\
 	external/glib/gobject  		\
 	external/glib/gthread		\
-	ffmpeg-android/ffmpeg		\
+	ffmpeg-android/			\
 	ffmpeg-android/build/ffmpeg/include/
 
 LOCAL_CFLAGS := \
