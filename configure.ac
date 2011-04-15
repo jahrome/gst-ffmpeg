@@ -360,24 +360,24 @@ else
   AC_SUBST(FFMPEG_SVN)
   AC_SUBST(FFMPEG_REVISION)
   AC_SUBST(FFMPEG_EXTERNALS_REVISION)
-  AC_CONFIG_COMMANDS([configure-embedded-ffmpeg],
-    [echo "Configuring included FFmpeg instance with args $embffmpeg_configure_args"
-     origdir=`pwd`
-     dnl Don't put path on the configure call when not needed, as FFmpeg's configure relies on it
-     dnl to detect out-of-tree builds
-     if test -z "$srcdir" -o "$srcdir" = .; then
-       confcmd=./configure
-     else
-       confcmd="$origdir"/"$ac_top_srcdir"/gst-libs/ext/ffmpeg/configure
-     fi
-
-     AS_MKDIR_P(["$ac_top_build_prefix"gst-libs/ext/ffmpeg])
-     cd "$ac_top_build_prefix"gst-libs/ext/ffmpeg &&
-         $confcmd $embffmpeg_configure_args ||
-         AC_MSG_ERROR([Failed to configure embedded FFmpeg tree])
-     cd "$origdir"
-    ],
-    [embffmpeg_configure_args="$embffmpeg_configure_args"])
+#  AC_CONFIG_COMMANDS([configure-embedded-ffmpeg],
+#    [echo "Configuring included FFmpeg instance with args $embffmpeg_configure_args"
+#     origdir=`pwd`
+#     dnl Don't put path on the configure call when not needed, as FFmpeg's configure relies on it
+#     dnl to detect out-of-tree builds
+#     if test -z "$srcdir" -o "$srcdir" = .; then
+#       confcmd=./configure
+#     else
+#       confcmd="$origdir"/"$ac_top_srcdir"/gst-libs/ext/ffmpeg/configure
+#     fi
+#
+#     AS_MKDIR_P(["$ac_top_build_prefix"gst-libs/ext/ffmpeg])
+#     cd "$ac_top_build_prefix"gst-libs/ext/ffmpeg &&
+#         $confcmd $embffmpeg_configure_args ||
+#         AC_MSG_ERROR([Failed to configure embedded FFmpeg tree])
+#     cd "$origdir"
+#    ],
+#    [embffmpeg_configure_args="$embffmpeg_configure_args"])
   AC_MSG_NOTICE([Using included FFMpeg code])
 fi
 

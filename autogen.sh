@@ -6,7 +6,7 @@ package=gst-ffmpeg
 srcfile=configure.ac
 have_svn=`which svn`
 # FFMPEG specific properties
-. ./ffmpegrev
+#. ./ffmpegrev
 
 # make sure we have common
 if test ! -f common/gst-autogen.sh; 
@@ -31,7 +31,7 @@ then
 
     if [ "$co_ffmpeg" = "yes" ]; then
 	# checkout ffmpeg from its repository
-	rm -rf $FFMPEG_CO_DIR
+	#rm -rf $FFMPEG_CO_DIR
 	echo "+ getting ffmpeg from svn"
 	svn -r $FFMPEG_REVISION co $FFMPEG_SVN $FFMPEG_CO_DIR
     else
