@@ -40,6 +40,7 @@ LOCAL_SHARED_LIBRARIES:=\
         libavcodec \
 	libm \
 	libz \
+	libutils \
 	libdl
 
 LOCAL_LDFLAGS:=\

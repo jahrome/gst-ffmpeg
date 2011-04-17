@@ -42,6 +42,11 @@
 #include "gstffmpegutils.h"
 #include "gstffmpegpipe.h"
 
+//#define LOG_NDEBUG 0
+#undef LOG_TAG
+#define LOG_TAG "libgstffmpeg"
+#include <utils/Log.h>
+
 typedef struct _GstFFMpegDemux GstFFMpegDemux;
 typedef struct _GstFFStream GstFFStream;
 
@@ -1286,11 +1291,11 @@ gst_ffmpegdemux_type_find (GstTypeFind * tf, gpointer priv)
    * skip the ffmpeg typefinders if the data available is too short
    * (in which case it's unlikely to be a media file anyway) */
   if (length < GST_FFMPEG_TYPE_FIND_MIN_SIZE) {
-    GST_LOG ("not typefinding %" G_GUINT64_FORMAT " bytes, too short", length);
+    LOGV ("not typefinding %" G_GUINT64_FORMAT " bytes, too short", length);
     return;
   }
 
-  GST_LOG ("typefinding %" G_GUINT64_FORMAT " bytes", length);
+  LOGV ("typefinding %" G_GUINT64_FORMAT " bytes", length);
   if (in_plugin->read_probe &&
       (data = gst_type_find_peek (tf, 0, length)) != NULL) {
     AVProbeData probe_data;
@@ -1311,7 +1316,7 @@ gst_ffmpegdemux_type_find (GstTypeFind * tf, gpointer priv)
 
       sinkcaps = gst_ffmpeg_formatid_to_caps (in_plugin->name);
 
-      GST_LOG ("ffmpeg typefinder '%s' suggests %" GST_PTR_FORMAT ", p=%u%%",
+      LOGV ("ffmpeg typefinder '%s' suggests %" GST_PTR_FORMAT ", p=%u%%",
           in_plugin->name, sinkcaps, res);
 
       gst_type_find_suggest (tf, res, sinkcaps);
@@ -1862,7 +1867,7 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
 
   in_plugin = av_iformat_next (NULL);
 
-  GST_LOG ("Registering demuxers");
+  LOGV ("Registering demuxers");
 
   while (in_plugin) {
     gchar *type_name, *typefind_name;
@@ -1870,7 +1875,7 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
     gint rank;
     gboolean register_typefind_func = TRUE;
 
-    GST_LOG ("Attempting to handle ffmpeg demuxer plugin %s [%s]",
+    LOGV ("Attempting to handle ffmpeg demuxer plugin %s [%s]",
         in_plugin->name, in_plugin->long_name);
 
     /* no emulators */
@@ -2031,7 +2036,7 @@ gst_ffmpegdemux_register (GstPlugin * plugin)
     in_plugin = av_iformat_next (in_plugin);
   }
 
-  GST_LOG ("Finished registering demuxers");
+  LOGV ("Finished registering demuxers");
 
   return TRUE;
 }
