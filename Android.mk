@@ -18,7 +18,7 @@ gst-ffmpeg-configure:
 	LDFLAGS="$(CONFIGURE_LDFLAGS)" \
 	CPP=$(CONFIGURE_CPP) \
 	CPPFLAGS="$(CONFIGURE_CPPFLAGS)" \
-	PKG_CONFIG_LIBDIR="$(TOTO)" \
+	PKG_CONFIG_LIBDIR="$(_CONFIGURE_PKG_CONFIG_LIBDIR)" \
 	PKG_CONFIG_TOP_BUILD_DIR=/ \
 	$(abspath $(GST_FFMPEG_TOP))/$(CONFIGURE) --host=arm-linux-androideabi \
 		--prefix=/system --disable-orc --disable-valgrind && \
@@ -27,6 +27,6 @@ gst-ffmpeg-configure:
 		make -C $$(dirname $$file) $$(basename $$file) ; \
 	done
 
-CONFIGURE_TARGETS += gst-ffmpeg-configure
+#CONFIGURE_TARGETS += gst-ffmpeg-configure
 
 -include $(GST_FFMPEG_TOP)/ext/ffmpeg/Android.mk
