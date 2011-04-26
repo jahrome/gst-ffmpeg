@@ -758,7 +758,8 @@ gst_ffmpeg_codecid_to_caps (enum CodecID codec_id,
       break;
 
     case CODEC_ID_RAWVIDEO:
-      caps = gst_ffmpeg_codectype_to_caps (CODEC_TYPE_VIDEO, context, codec_id,
+      caps =
+          gst_ffmpeg_codectype_to_caps (AVMEDIA_TYPE_VIDEO, context, codec_id,
           encode);
       break;
 
@@ -1211,7 +1212,6 @@ gst_ffmpeg_codecid_to_caps (enum CodecID codec_id,
     case CODEC_ID_SNOW:
     case CODEC_ID_VIXL:
     case CODEC_ID_QPEG:
-    case CODEC_ID_XVID:
     case CODEC_ID_PGMYUV:
     case CODEC_ID_FFVHUFF:
     case CODEC_ID_WNV1:
@@ -1589,12 +1589,12 @@ gst_ffmpeg_codecid_to_caps (enum CodecID codec_id,
       GST_LOG ("Could not create stream format caps for %s", codec->name);
 
       switch (codec->type) {
-        case CODEC_TYPE_VIDEO:
+        case AVMEDIA_TYPE_VIDEO:
           mime = g_strdup_printf ("video/x-gst_ff-%s", codec->name);
           caps = gst_ff_vid_caps_new (context, codec_id, mime, NULL);
           g_free (mime);
           break;
-        case CODEC_TYPE_AUDIO:
+        case AVMEDIA_TYPE_AUDIO:
           mime = g_strdup_printf ("audio/x-gst_ff-%s", codec->name);
           caps = gst_ff_aud_caps_new (context, codec_id, mime, NULL);
           if (context)
@@ -1921,21 +1921,21 @@ gst_ffmpeg_codectype_to_video_caps (AVCodecContext * context,
  * to a GstCaps. If the context is ommitted, no fixed values
  * for video/audio size will be included in the GstCaps
  *
- * CodecType is primarily meant for uncompressed data GstCaps!
+ * AVMediaType is primarily meant for uncompressed data GstCaps!
  */
 
 GstCaps *
-gst_ffmpeg_codectype_to_caps (enum CodecType codec_type,
+gst_ffmpeg_codectype_to_caps (enum AVMediaType codec_type,
     AVCodecContext * context, enum CodecID codec_id, gboolean encode)
 {
   GstCaps *caps;
 
   switch (codec_type) {
-    case CODEC_TYPE_VIDEO:
+    case AVMEDIA_TYPE_VIDEO:
       caps =
           gst_ffmpeg_codectype_to_video_caps (context, codec_id, encode, NULL);
       break;
-    case CODEC_TYPE_AUDIO:
+    case AVMEDIA_TYPE_AUDIO:
       caps =
           gst_ffmpeg_codectype_to_audio_caps (context, codec_id, encode, NULL);
       break;
@@ -2144,22 +2144,22 @@ gst_ffmpeg_caps_to_pixfmt (const GstCaps * caps,
  * AVCodecContext. If the context is ommitted, no fixed values
  * for video/audio size will be included in the context
  *
- * CodecType is primarily meant for uncompressed data GstCaps!
+ * AVMediaType is primarily meant for uncompressed data GstCaps!
  */
 
 void
-gst_ffmpeg_caps_with_codectype (enum CodecType type,
+gst_ffmpeg_caps_with_codectype (enum AVMediaType type,
     const GstCaps * caps, AVCodecContext * context)
 {
   if (context == NULL)
     return;
 
   switch (type) {
-    case CODEC_TYPE_VIDEO:
+    case AVMEDIA_TYPE_VIDEO:
       gst_ffmpeg_caps_to_pixfmt (caps, context, TRUE);
       break;
 
-    case CODEC_TYPE_AUDIO:
+    case AVMEDIA_TYPE_AUDIO:
       gst_ffmpeg_caps_to_smpfmt (caps, context, TRUE);
       break;
 
@@ -2266,7 +2266,7 @@ full_copy:
 
 void
 gst_ffmpeg_caps_with_codecid (enum CodecID codec_id,
-    enum CodecType codec_type, const GstCaps * caps, AVCodecContext * context)
+    enum AVMediaType codec_type, const GstCaps * caps, AVCodecContext * context)
 {
   GstStructure *str;
   const GValue *value;
@@ -2505,11 +2505,11 @@ gst_ffmpeg_caps_with_codecid (enum CodecID codec_id,
 
   /* common properties (width, height, fps) */
   switch (codec_type) {
-    case CODEC_TYPE_VIDEO:
+    case AVMEDIA_TYPE_VIDEO:
       gst_ffmpeg_caps_to_pixfmt (caps, context, codec_id == CODEC_ID_RAWVIDEO);
       gst_ffmpeg_get_palette (caps, context);
       break;
-    case CODEC_TYPE_AUDIO:
+    case AVMEDIA_TYPE_AUDIO:
       gst_ffmpeg_caps_to_smpfmt (caps, context, FALSE);
       break;
     default:
@@ -3358,11 +3358,11 @@ gst_ffmpeg_caps_to_codecid (const GstCaps * caps, AVCodecContext * context)
 
   if (context != NULL) {
     if (video == TRUE) {
-      context->codec_type = CODEC_TYPE_VIDEO;
+      context->codec_type = AVMEDIA_TYPE_VIDEO;
     } else if (audio == TRUE) {
-      context->codec_type = CODEC_TYPE_AUDIO;
+      context->codec_type = AVMEDIA_TYPE_AUDIO;
     } else {
-      context->codec_type = CODEC_TYPE_UNKNOWN;
+      context->codec_type = AVMEDIA_TYPE_UNKNOWN;
     }
     context->codec_id = id;
     gst_ffmpeg_caps_with_codecid (id, context->codec_type, caps, context);

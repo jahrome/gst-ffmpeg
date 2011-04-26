@@ -93,6 +93,9 @@ LOCAL_CFLAGS := \
 	-Waggregate-return \
 	-Wno-multichar \
 	-Wnested-externs \
+	-DFFMPEG_SOURCE='"Android Port"' \
+	-DPACKAGE_VERSION='"git master"' \
+	-DPACKAGE='"git master"' \
 	-DGST_DISABLE_DEPRECATED
 
 LOCAL_PRELINK_MODULE := false

@@ -46,6 +46,7 @@
 #undef LOG_TAG
 #define LOG_TAG "libgstffmpeg"
 #include <utils/Log.h>
+#define MAX_STREAMS 20
 
 typedef struct _GstFFMpegDemux GstFFMpegDemux;
 typedef struct _GstFFStream GstFFStream;
@@ -155,22 +156,22 @@ gst_ffmpegdemux_averror (gint av_errno)
   const gchar *message = NULL;
 
   switch (av_errno) {
-    case AVERROR_UNKNOWN:
+    case AVERROR (EINVAL):
       message = "Unknown error";
       break;
-    case AVERROR_IO:
+    case AVERROR (EIO):
       message = "Input/output error";
       break;
-    case AVERROR_NUMEXPECTED:
+    case AVERROR (EDOM):
       message = "Number syntax expected in filename";
       break;
-    case AVERROR_NOMEM:
+    case AVERROR (ENOMEM):
       message = "Not enough memory";
       break;
-    case AVERROR_NOFMT:
+    case AVERROR (EILSEQ):
       message = "Unknown format";
       break;
-    case AVERROR_NOTSUPP:
+    case AVERROR (ENOSYS):
       message = "Operation not supported";
       break;
     default:
@@ -463,7 +464,7 @@ gst_ffmpegdemux_do_seek (GstFFMpegDemux * demux, GstSegment * segment)
 
   /* if we need to land on a keyframe, try to do so, we don't try to do a 
    * keyframe seek if we are not absolutely sure we have an index.*/
-  if (segment->flags & GST_SEEK_FLAG_KEY_UNIT && demux->context->index_built) {
+  if (segment->flags & GST_SEEK_FLAG_KEY_UNIT) {
     gint keyframeidx;
 
     GST_LOG_OBJECT (demux, "looking for keyframe in ffmpeg for time %"
@@ -673,14 +674,12 @@ static gboolean
 gst_ffmpegdemux_src_event (GstPad * pad, GstEvent * event)
 {
   GstFFMpegDemux *demux;
-  AVStream *avstream;
   GstFFStream *stream;
   gboolean res = TRUE;
 
   if (!(stream = gst_pad_get_element_private (pad)))
     return FALSE;
 
-  avstream = stream->avstream;
   demux = (GstFFMpegDemux *) gst_pad_get_parent (pad);
 
   switch (GST_EVENT_TYPE (event)) {
@@ -874,7 +873,7 @@ gst_ffmpegdemux_src_convert (GstPad * pad,
     return FALSE;
 
   avstream = stream->avstream;
-  if (avstream->codec->codec_type != CODEC_TYPE_VIDEO)
+  if (avstream->codec->codec_type != AVMEDIA_TYPE_VIDEO)
     return FALSE;
 
   switch (src_fmt) {
@@ -984,11 +983,11 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
   stream->tags = NULL;
 
   switch (ctx->codec_type) {
-    case CODEC_TYPE_VIDEO:
+    case AVMEDIA_TYPE_VIDEO:
       templ = oclass->videosrctempl;
       num = demux->videopads++;
       break;
-    case CODEC_TYPE_AUDIO:
+    case AVMEDIA_TYPE_AUDIO:
       templ = oclass->audiosrctempl;
       num = demux->audiopads++;
       break;
@@ -1048,7 +1047,7 @@ gst_ffmpegdemux_get_stream (GstFFMpegDemux * demux, AVStream * avstream)
     stream->tags = gst_tag_list_new ();
 
     gst_tag_list_add (stream->tags, GST_TAG_MERGE_REPLACE,
-        (ctx->codec_type == CODEC_TYPE_VIDEO) ?
+        (ctx->codec_type == AVMEDIA_TYPE_VIDEO) ?
         GST_TAG_VIDEO_CODEC : GST_TAG_AUDIO_CODEC, codec, NULL);
   }
 
@@ -1072,6 +1071,10 @@ unknown_caps:
   }
 }
 
+#if 0
+    /* Re-enable once converted to new AVMetaData API
+     * See #566605
+     */
 static gchar *
 my_safe_copy (gchar * input)
 {
@@ -1142,6 +1145,7 @@ gst_ffmpegdemux_read_tags (GstFFMpegDemux * demux)
   }
   return tlist;
 }
+#endif
 
 static gboolean
 gst_ffmpegdemux_open (GstFFMpegDemux * demux)
@@ -1150,7 +1154,12 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
       (GstFFMpegDemuxClass *) G_OBJECT_GET_CLASS (demux);
   gchar *location;
   gint res, n_streams, i;
+#if 0
+  /* Re-enable once converted to new AVMetaData API
+   * See #566605
+   */
   GstTagList *tags;
+#endif
   GstEvent *event;
   GList *cached_events;
 
@@ -1231,12 +1240,17 @@ gst_ffmpegdemux_open (GstFFMpegDemux * demux)
     cached_events = g_list_delete_link (cached_events, cached_events);
   }
 
+#if 0
+  /* Re-enable once converted to new AVMetaData API
+   * See #566605
+   */
   /* grab the global tags */
   tags = gst_ffmpegdemux_read_tags (demux);
   if (tags) {
     GST_INFO_OBJECT (demux, "global tags: %" GST_PTR_FORMAT, tags);
     gst_element_found_tags (GST_ELEMENT (demux), tags);
   }
+#endif
 
   /* now handle the stream tags */
   for (i = 0; i < n_streams; i++) {
@@ -1396,7 +1410,7 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
   /* prepare to push packet to peer */
   srcpad = stream->pad;
 
-  rawvideo = (avstream->codec->codec_type == CODEC_TYPE_VIDEO &&
+  rawvideo = (avstream->codec->codec_type == AVMEDIA_TYPE_VIDEO &&
       avstream->codec->codec_id == CODEC_ID_RAWVIDEO);
 
   if (rawvideo)
@@ -1448,7 +1462,7 @@ gst_ffmpegdemux_loop (GstFFMpegDemux * demux)
   GST_BUFFER_DURATION (outbuf) = duration;
 
   /* mark keyframes */
-  if (!(pkt.flags & PKT_FLAG_KEY)) {
+  if (!(pkt.flags & AV_PKT_FLAG_KEY)) {
     GST_BUFFER_FLAG_SET (outbuf, GST_BUFFER_FLAG_DELTA_UNIT);
   }
 
